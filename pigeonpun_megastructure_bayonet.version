@@ -1,0 +1,24 @@
+{
+  # SETUP
+  # 1. In `data/config/version/version_files.csv`, uncomment both lines (delete the `#`'s).
+  # 2. Change `yourName_uniqueid.version` to, well, your name (e.g. wisp) and your mod's id.
+  # 3. Rename THIS .version file that you're reading to be the same name you just picked.
+  # Now, the game/Version Checker will look at `data/config/version/version_files.csv` and it will tell it how to find the file you're reading.
+  "masterVersionFile": "https://raw.githubusercontent.com/CosmicFishi/megastructure-Bayonet/main/pigeonpun_megastructure_bayonet.version",
+
+  "modName": "Megastructure: Bayonet",
+  "modVersion":
+    {
+      "major": 0,
+      "minor": 1,
+      "patch": 0 # Can be a number, character or string (1, 2, a, b, "-RC2", etc)
+    },
+  "modThreadId": 0, # eg 8181
+
+  # OPTIONAL
+  # A download link directly to the latest version of your mod.
+  # This is used by mod managers/version checkers (eg SMOL, MOSS, LunaLib) to let users quickly update/download without visiting your mod page.
+  #"directDownloadURL": "https://github.com/MagicLibStarsector/MagicLib/releases/download/1.0.0/MagicLib-1.0.0.zip",
+
+  "changelogURL": "https://raw.githubusercontent.com/CosmicFishi/Megastructure-Bayonet/master/changelog.txt",
+}
