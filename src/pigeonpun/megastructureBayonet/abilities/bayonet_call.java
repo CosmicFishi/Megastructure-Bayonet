@@ -28,11 +28,6 @@ public class bayonet_call extends BaseDurationAbility {
                     Factions.NEUTRAL
             );
             Global.getSector().getMemoryWithoutUpdate().set(bayonet_memory_ID, station);
-            //todo - Ability to transfer cargo (player cargo <-> Bayonet cargo)
-            //todo - Emergency repair of fleet
-            //todo - Customize station if possible
-            //todo - Call in Bayonet in hyperspace and still get it to function ?
-            //todo - Megastructure integration ?
 //            station.getMemoryWithoutUpdate().set("$abandonedStation", true);
 //            MarketAPI market = Global.getFactory().createMarket(marketId, station.getName(), 0);
 //            market.setSurveyLevel(MarketAPI.SurveyLevel.FULL);
