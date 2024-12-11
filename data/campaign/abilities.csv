@@ -1,2 +1,2 @@
 name,id,type,tags,activationDays,activationCooldown,durationDays,deactivationDays,deactivationCooldown,unlockedAtStart,defaultForAIFleet,musicSuppression,uiOn,uiOff,uiLoop,worldOn,worldOff,worldLoop,icon,plugin,ai,desc,sortOrder
-Bayonet Hail,mega_bayonet_call,DURATION,,0,,0.1,,1,true,,,ui_transponder_on,ui_transponder_off,,,,,graphics/icons/abilities/bayonet_call.png,pigeonpun.megastructureBayonet.abilities.bayonet_call,,Call in Bayonet,2000
+Bayonet Hail,mega_bayonet_call,DURATION,,0,,0.1,,1,true,,,ui_transponder_on,ui_transponder_off,,,,,graphics/icons/abilities/bayonet_call.png,pigeonpun.megastructureBayonet.abilities.bayonetCall,,Call in Bayonet,2000

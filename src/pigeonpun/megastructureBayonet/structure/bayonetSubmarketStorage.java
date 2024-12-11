@@ -1,14 +1,13 @@
 package pigeonpun.megastructureBayonet.structure;
 
 import com.fs.starfarer.api.campaign.CargoStackAPI;
-import com.fs.starfarer.api.campaign.CoreUIAPI;
 import com.fs.starfarer.api.campaign.econ.SubmarketAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.fleet.MutableMarketStatsAPI;
 import com.fs.starfarer.api.impl.campaign.submarkets.StoragePlugin;
 import pigeonpun.megastructureBayonet.ModPlugin;
 
-public class bayonet_storage extends StoragePlugin {
+public class bayonetSubmarketStorage extends StoragePlugin {
     public static final int BASE_STORAGE = 10000;
 
     @Override

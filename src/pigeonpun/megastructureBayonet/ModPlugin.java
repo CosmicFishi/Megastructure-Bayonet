@@ -4,6 +4,7 @@ import com.fs.starfarer.api.BaseModPlugin;
 
 public class ModPlugin extends BaseModPlugin {
     public static final String BAYONET_STORAGE_STATS_KEY = "bayonet_storage";
+    public static final String BAYONET_STORAGE_SUBMARKET = "megastructure_bayonet_storage";
     //todo - Ability to transfer cargo (player cargo <-> Bayonet cargo)
     //todo - Emergency repair of fleet
     //todo - Customize station if possible
