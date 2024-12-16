@@ -7,7 +7,10 @@ import com.fs.starfarer.api.campaign.SectorEntityToken;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Conditions;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
+import com.fs.starfarer.api.impl.campaign.ids.Industries;
+import com.fs.starfarer.api.impl.campaign.ids.Submarkets;
 import com.fs.starfarer.api.impl.campaign.submarkets.StoragePlugin;
+import com.fs.starfarer.api.util.Misc;
 import org.apache.log4j.Logger;
 import pigeonpun.megastructureBayonet.ModPlugin;
 
@@ -76,16 +79,19 @@ public class bayonetManager {
                 Factions.NEUTRAL
         );
         temp.getMemoryWithoutUpdate().set("$abandonedStation", true);
+//        MarketAPI market = Global.getFactory().createMarket("megastructure_bayonet_station", temp.getName(), 0);
         MarketAPI market = Global.getFactory().createMarket("megastructure_bayonet_station", temp.getName(), 0);
         market.setSurveyLevel(MarketAPI.SurveyLevel.FULL);
         market.setPrimaryEntity(temp);
-        market.setFactionId(Factions.PLAYER);
+        market.setFactionId(temp.getFaction().getId());
         market.addCondition(Conditions.ABANDONED_STATION);
         market.getCondition(Conditions.ABANDONED_STATION).setSurveyed(false);
         market.addSubmarket(ModPlugin.BAYONET_STORAGE_SUBMARKET);
         market.setPlanetConditionMarketOnly(false);
         ((StoragePlugin)market.getSubmarket(ModPlugin.BAYONET_STORAGE_SUBMARKET).getPlugin()).setPlayerPaidToUnlock(true);
         temp.setMarket(market);
+        temp.getMemoryWithoutUpdate().unset("$tradeMode");
+//        Misc.setAbandonedStationMarket("megastructure_bayonet_station", temp);
         temp.setLocation(Global.getSector().getPlayerFleet().getLocation().x, Global.getSector().getPlayerFleet().getLocation().y);
         return temp;
     }
