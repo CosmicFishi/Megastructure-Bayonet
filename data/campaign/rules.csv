@@ -4,8 +4,12 @@ bayonet_stationOptions,PopulateOptions,"$hasMarket
 $menuState == main
 $mega_bayonet","RemoveOption marketVisitBar
 RemoveOption marketOpenCoreUI
-SetShortcut marketLeave ""ESCAPE""
+RemoveOption marketLeave
+SetShortcut bayonet_marketLeave ""ESCAPE""
 bayonetAddStationRefit",,"10:marketOpenCargo:Transfer cargo
 11:marketOpenFleet:Transfer ships
-12:marketRefit:Use the local facilities to refit your $shipOrFleet",
+12:marketRefit:Use the local facilities to refit your $shipOrFleet
+100:bayonet_marketLeave:Leave",
+bayonet_stationOption_leave,DialogOptionSelected,"$option == bayonet_marketLeave","DismissDialog
+bayonetCleanUpAfterStationRefit",,,
 
