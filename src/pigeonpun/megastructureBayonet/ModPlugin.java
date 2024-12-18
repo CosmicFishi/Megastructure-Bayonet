@@ -6,9 +6,8 @@ public class ModPlugin extends BaseModPlugin {
     public static final String BAYONET_STORAGE_STATS_KEY = "bayonet_storage";
     public static final String BAYONET_SHIP_STORAGE_STATS_KEY = "bayonet_ship_storage";
     public static final String BAYONET_STORAGE_SUBMARKET = "megastructure_bayonet_storage";
-    //- Ability to transfer cargo (player cargo <-> Bayonet cargo)
-    //      Right now, only transferring between ship is good, commodities however, only buying
-    //todo - Emergency repair of fleet
+    //todo: - Ability to transfer cargo (player cargo <-> Bayonet cargo)
+    //todo - Emergency repair of fleet ^
     //todo - Customize station if possible (WIP)
     //todo - Call in Bayonet in hyperspace and still get it to function ?
     //todo - Megastructure integration ?
