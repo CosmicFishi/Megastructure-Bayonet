@@ -83,19 +83,7 @@ public class bayonetManager {
 //                "The Bayonet", "megastructure_bayonet",
 //                Factions.PLAYER
 //        );
-//        MarketAPI temp_market = Global.getFactory().createMarket("megastructure_bayonet_station", temp.getName(), 3);
-//        temp.setMarket(temp_market);
-//        MarketAPI market = temp.getMarket();
-//        market.setSurveyLevel(MarketAPI.SurveyLevel.FULL);
-//        market.setPrimaryEntity(temp);
-//        market.setFactionId(temp.getFaction().getId());
-//        market.addCondition(Conditions.ABANDONED_STATION);
-//        market.getCondition(Conditions.ABANDONED_STATION).setSurveyed(false);
-//        market.addSubmarket(Submarkets.SUBMARKET_STORAGE);
-//        market.setPlanetConditionMarketOnly(false);
-//        ((StoragePlugin)market.getSubmarket(Submarkets.SUBMARKET_STORAGE).getPlugin()).setPlayerPaidToUnlock(true);
-//        market.setFactionId(Factions.PLAYER);
-//        market.setPlayerOwned(true);
+
 //        temp.getMemoryWithoutUpdate().unset("$tradeMode");
 ////        Misc.setAbandonedStationMarket("megastructure_bayonet_station", temp);
 //        temp.setLocation(Global.getSector().getPlayerFleet().getLocation().x, Global.getSector().getPlayerFleet().getLocation().y);
@@ -128,6 +116,20 @@ public class bayonetManager {
         fleet.setOrbit(null);
         Global.getSector().getCurrentLocation().addEntity(fleet);
         fleet.getLocation().set(Global.getSector().getPlayerFleet().getLocation());
+
+        MarketAPI market = Global.getFactory().createMarket("megastructure_bayonet_station", fleet.getName(), 0);
+        market.setSurveyLevel(MarketAPI.SurveyLevel.FULL);
+        market.setPrimaryEntity(fleet);
+        market.addCondition(Conditions.ABANDONED_STATION);
+        market.getCondition(Conditions.ABANDONED_STATION).setSurveyed(false);
+        market.addSubmarket(Submarkets.SUBMARKET_STORAGE);
+        ((StoragePlugin)market.getSubmarket(Submarkets.SUBMARKET_STORAGE).getPlugin()).setPlayerPaidToUnlock(true);
+        market.setFactionId(Factions.PLAYER);
+        market.setPlayerOwned(true);
+        fleet.getMemoryWithoutUpdate().set("$tradeMode", "OPEN");
+        fleet.getMemoryWithoutUpdate().set("$hasMarket", true);
+        fleet.setMarket(market);
+        fleet.addTag(Tags.STATION);
 
         return fleet;
     }

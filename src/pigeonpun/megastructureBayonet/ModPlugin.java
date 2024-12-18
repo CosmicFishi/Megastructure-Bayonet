@@ -1,6 +1,9 @@
 package pigeonpun.megastructureBayonet;
 
 import com.fs.starfarer.api.BaseModPlugin;
+import com.fs.starfarer.api.Global;
+import com.thoughtworks.xstream.XStream;
+import org.magiclib.bounty.MagicBountyCampaignPlugin;
 
 public class ModPlugin extends BaseModPlugin {
     public static final String BAYONET_STORAGE_STATS_KEY = "bayonet_storage";
@@ -23,5 +26,15 @@ public class ModPlugin extends BaseModPlugin {
         // Add your code here, or delete this method (it does nothing unless you add code)
     }
 
+    @Override
+    public void onGameLoad(boolean newGame) {
+        Global.getSector().registerPlugin(new bayonetBaseCampaignPlugin());
+    }
+
+    @Override
+    public void configureXStream(XStream x) {
+        super.configureXStream(x);
+        x.alias("Megastructure_bayonetCampaignPlugin", bayonetBaseCampaignPlugin.class);
+    }
     // You can add more methods from ModPlugin here. Press Control-O in IntelliJ to see options.
 }

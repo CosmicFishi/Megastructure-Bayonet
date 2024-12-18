@@ -1,6 +1,11 @@
 id,trigger,conditions,script,text,options,notes
 "#RULESET_NAME Megastructure-Bayonet",,,,,,
-,,,,,,
-# bayonetStorage,,,,,,
-"#END bayonetStorage",,,,,,
+bayonet_stationOptions,PopulateOptions,"$hasMarket
+$menuState == main
+$mega_bayonet","RemoveOption marketVisitBar
+RemoveOption marketOpenCoreUI
+SetShortcut marketLeave ""ESCAPE""
+bayonetAddStationRefit",,"10:marketOpenCargo:Transfer cargo
+11:marketOpenFleet:Transfer ships
+12:marketRefit:Use the local facilities to refit your $shipOrFleet",
 
