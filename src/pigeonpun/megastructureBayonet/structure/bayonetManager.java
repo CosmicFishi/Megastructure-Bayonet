@@ -78,18 +78,6 @@ public class bayonetManager {
         Global.getSector().getMemoryWithoutUpdate().set(bayonet_station_memory_ID, stationFleet);
     }
     private static CampaignFleetAPI createStation() {
-//        SectorEntityToken temp = Global.getSector().getCurrentLocation().addCustomEntity(
-//                bayonet_entity_ID,
-//                "The Bayonet", "megastructure_bayonet",
-//                Factions.PLAYER
-//        );
-
-//        temp.getMemoryWithoutUpdate().unset("$tradeMode");
-////        Misc.setAbandonedStationMarket("megastructure_bayonet_station", temp);
-//        temp.setLocation(Global.getSector().getPlayerFleet().getLocation().x, Global.getSector().getPlayerFleet().getLocation().y);
-//        Todo: change this so it will add a dummy market
-
-//        return temp;
         CampaignFleetAPI fleet = FleetFactoryV3.createEmptyFleet(Factions.PLAYER, FleetTypes.BATTLESTATION, null);
         FleetMemberAPI member = Global.getFactory().createFleetMember(FleetMemberType.SHIP, "station1_hightech_Standard");
         fleet.getFleetData().addFleetMember(member);
@@ -123,6 +111,7 @@ public class bayonetManager {
         market.addCondition(Conditions.ABANDONED_STATION);
         market.getCondition(Conditions.ABANDONED_STATION).setSurveyed(false);
         market.addSubmarket(Submarkets.SUBMARKET_STORAGE);
+        market.addCondition("megastructure_bayonet_storage_condition");
         ((StoragePlugin)market.getSubmarket(Submarkets.SUBMARKET_STORAGE).getPlugin()).setPlayerPaidToUnlock(true);
         market.setFactionId(Factions.PLAYER);
         market.setPlayerOwned(true);

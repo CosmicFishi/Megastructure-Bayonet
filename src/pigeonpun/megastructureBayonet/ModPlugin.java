@@ -8,10 +8,10 @@ import org.magiclib.bounty.MagicBountyCampaignPlugin;
 public class ModPlugin extends BaseModPlugin {
     public static final String BAYONET_STORAGE_STATS_KEY = "bayonet_storage";
     public static final String BAYONET_SHIP_STORAGE_STATS_KEY = "bayonet_ship_storage";
-    public static final String BAYONET_STORAGE_SUBMARKET = "megastructure_bayonet_storage";
     //todo: - Ability to transfer cargo (player cargo <-> Bayonet cargo)
     //todo - Emergency repair of fleet ^
     //todo - Customize station if possible (WIP)
+    //          Fix a issue where the station can be stored into storage.
     //todo - Call in Bayonet in hyperspace and still get it to function ?
     //todo - Megastructure integration ?
     //todo - animation - credit SirHarley
