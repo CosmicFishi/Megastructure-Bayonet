@@ -24,6 +24,7 @@ public class bayonetManager {
     public static final String bayonet_cargo_memory_ID = "$megastructure_bayonet_cargo";
     public static final String bayonet_station_memory_ID = "$megastructure_bayonet_station";
     public static final String bayonet_entity_ID = "$mega_bayonet";
+    public static final String bayonet_entity_TAG = "mega_bayonet";
 
     //todo: the station variant
 //            CampaignFleetAPI fleet = Global.getFactory().createEmptyFleet(Factions.PLAYER, "Temp", false);
@@ -80,6 +81,7 @@ public class bayonetManager {
     private static CampaignFleetAPI createStation() {
         CampaignFleetAPI fleet = FleetFactoryV3.createEmptyFleet(Factions.PLAYER, FleetTypes.BATTLESTATION, null);
         FleetMemberAPI member = Global.getFactory().createFleetMember(FleetMemberType.SHIP, "station1_hightech_Standard");
+        member.getVariant().addTag(bayonet_entity_TAG);
         fleet.getFleetData().addFleetMember(member);
         fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_MAKE_AGGRESSIVE, true);
         fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_NO_JUMP, true);
@@ -105,14 +107,14 @@ public class bayonetManager {
         Global.getSector().getCurrentLocation().addEntity(fleet);
         fleet.getLocation().set(Global.getSector().getPlayerFleet().getLocation());
 
-        MarketAPI market = Global.getFactory().createMarket("megastructure_bayonet_station", fleet.getName(), 0);
+        MarketAPI market = Global.getFactory().createMarket("megastructure_bayonet_station", fleet.getName(), 5);
         market.setSurveyLevel(MarketAPI.SurveyLevel.FULL);
         market.setPrimaryEntity(fleet);
         market.addCondition(Conditions.ABANDONED_STATION);
         market.getCondition(Conditions.ABANDONED_STATION).setSurveyed(false);
-        market.addSubmarket(Submarkets.SUBMARKET_STORAGE);
+        market.addSubmarket("megastructure_bayonet_storage");
         market.addCondition("megastructure_bayonet_storage_condition");
-        ((StoragePlugin)market.getSubmarket(Submarkets.SUBMARKET_STORAGE).getPlugin()).setPlayerPaidToUnlock(true);
+        ((StoragePlugin)market.getSubmarket("megastructure_bayonet_storage").getPlugin()).setPlayerPaidToUnlock(true);
         market.setFactionId(Factions.PLAYER);
         market.setPlayerOwned(true);
         fleet.getMemoryWithoutUpdate().set("$tradeMode", "OPEN");

@@ -12,31 +12,31 @@ import com.fs.starfarer.api.impl.campaign.submarkets.StoragePlugin;
 import pigeonpun.megastructureBayonet.ModPlugin;
 
 public class bayonetSubmarketStorage extends StoragePlugin {
-    public static final int BASE_STORAGE = 10000;
+//    public static final int BASE_STORAGE = 10000;
     public static final int BASE_STORAGE_SHIP = 5;
 
     @Override
     public void init(SubmarketAPI submarket) {
         super.init(submarket);
-        submarket.getMarket().getStats().getDynamic().getMod(ModPlugin.BAYONET_STORAGE_STATS_KEY).modifyFlat(ModPlugin.BAYONET_STORAGE_STATS_KEY, BASE_STORAGE);
+//        submarket.getMarket().getStats().getDynamic().getMod(ModPlugin.BAYONET_STORAGE_STATS_KEY).modifyFlat(ModPlugin.BAYONET_STORAGE_STATS_KEY, BASE_STORAGE);
         submarket.getMarket().getStats().getDynamic().getMod(ModPlugin.BAYONET_SHIP_STORAGE_STATS_KEY).modifyFlat(ModPlugin.BAYONET_SHIP_STORAGE_STATS_KEY, BASE_STORAGE_SHIP);
     }
 
-    public int getTotalModifiedStorageSpace() {
-        MutableMarketStatsAPI stats = market.getStats();
-        return (int) Math.floor(stats.getDynamic().getMod(ModPlugin.BAYONET_STORAGE_STATS_KEY).computeEffective(0f));
-    }
+//    public int getTotalModifiedStorageSpace() {
+//        MutableMarketStatsAPI stats = market.getStats();
+//        return (int) Math.floor(stats.getDynamic().getMod(ModPlugin.BAYONET_STORAGE_STATS_KEY).computeEffective(0f));
+//    }
     public int getTotalModifiedShipStorageSpace() {
         MutableMarketStatsAPI stats = market.getStats();
         return (int) Math.floor(stats.getDynamic().getMod(ModPlugin.BAYONET_SHIP_STORAGE_STATS_KEY).computeEffective(0f));
     }
-    public int getCurrentStorageSpace() {
-            int count = 0;
-            for(CargoStackAPI stack: submarket.getCargo().getStacksCopy()) {
-                count += stack.getSize();
-            }
-        return count;
-    }
+//    public int getCurrentStorageSpace() {
+//            int count = 0;
+//            for(CargoStackAPI stack: submarket.getCargo().getStacksCopy()) {
+//                count += stack.getSize();
+//            }
+//        return count;
+//    }
     public int getCurrentShipStorageSpace() {
         int count = 0;
         if(submarket.getCargo().getMothballedShips() != null) {
@@ -46,17 +46,12 @@ public class bayonetSubmarketStorage extends StoragePlugin {
     }
     @Override
     public boolean isIllegalOnSubmarket(String commodityId, TransferAction action) {
-        return true;
+        return false;
     }
 
     @Override
     public boolean isIllegalOnSubmarket(CargoStackAPI stack, TransferAction action) {
-//        boolean isAllowed = false;
-//        if(action.equals(TransferAction.PLAYER_SELL) && getCurrentStorageSpace() + stack.getSize() >= getTotalModifiedStorageSpace()) {
-//            isAllowed = true;
-//        }
-        //Duo to limitation on the API side, only buying transaction is available :(
-        return action.equals(TransferAction.PLAYER_SELL);
+        return false;
     }
 
     @Override
@@ -67,6 +62,9 @@ public class bayonetSubmarketStorage extends StoragePlugin {
     @Override
     public boolean isIllegalOnSubmarket(FleetMemberAPI member, TransferAction action) {
         if(action.equals(TransferAction.PLAYER_SELL)) {
+            if(member.getVariant().getTags().contains(bayonetManager.bayonet_entity_TAG) || member.getVariant().getTags().contains(ModPlugin.BAYONET_SHIP_STORAGE_NO_STORE) ){
+                return true;
+            }
             return getCurrentShipStorageSpace() >= getTotalModifiedShipStorageSpace();
         }
         return false;
@@ -74,10 +72,11 @@ public class bayonetSubmarketStorage extends StoragePlugin {
 
     @Override
     public String getIllegalTransferText(FleetMemberAPI member, TransferAction action) {
+        if(member.getVariant().getTags().contains(bayonetManager.bayonet_entity_TAG) || member.getVariant().getTags().contains(ModPlugin.BAYONET_SHIP_STORAGE_NO_STORE)){
+            return "Unavailable";
+        }
         return "No ship cargo space available";
     }
-    //todo: add text for storage space
-    //todo: add condition for submarket to display the current storage spaces.
 
     @Override
     public String getSellVerb() {

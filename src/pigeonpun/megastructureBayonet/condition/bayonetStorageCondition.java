@@ -1,11 +1,18 @@
 package pigeonpun.megastructureBayonet.condition;
 
+import com.fs.starfarer.api.campaign.CargoStackAPI;
+import com.fs.starfarer.api.campaign.SubmarketPlugin;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.campaign.econ.MarketConditionAPI;
+import com.fs.starfarer.api.campaign.econ.SubmarketAPI;
+import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.econ.BaseMarketConditionPlugin;
 import com.fs.starfarer.api.impl.campaign.ids.Strings;
+import com.fs.starfarer.api.impl.campaign.ids.Submarkets;
+import com.fs.starfarer.api.impl.campaign.submarkets.StoragePlugin;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
+import pigeonpun.megastructureBayonet.structure.bayonetSubmarketStorage;
 
 import java.awt.*;
 
@@ -24,8 +31,8 @@ public class bayonetStorageCondition extends BaseMarketConditionPlugin {
 
         Color h = Misc.getHighlightColor();
 
-        int cargoCost = (int) (Misc.getStorageCargoValue(market) * f);
-        int shipCost = (int) (Misc.getStorageShipValue(market) * f);
+        int cargoCost = (int) (getStorageCargoValue(market) * f);
+        int shipCost = (int) (getStorageShipValue(market) * f);
 
         if (cargoCost + shipCost > 0) {
             //tooltip.beginGrid(150, 1);
@@ -48,5 +55,31 @@ public class bayonetStorageCondition extends BaseMarketConditionPlugin {
     @Override
     public void unapply(String id) {
 
+    }
+    public static float getStorageCargoValue(MarketAPI market) {
+        bayonetSubmarketStorage plugin = getBayonetStorage(market);
+        if (plugin == null) return 0f;
+        float value = 0f;
+        for (CargoStackAPI stack : plugin.getCargo().getStacksCopy()) {
+            value += stack.getSize() * stack.getBaseValuePerUnit();
+        }
+        return value;
+    }
+
+    public static float getStorageShipValue(MarketAPI market) {
+        bayonetSubmarketStorage plugin = getBayonetStorage(market);
+        if (plugin == null) return 0f;
+        float value = 0f;
+
+        for (FleetMemberAPI member : plugin.getCargo().getMothballedShips().getMembersListCopy()) {
+            value += member.getBaseValue();
+        }
+        return value;
+    }
+    public static bayonetSubmarketStorage getBayonetStorage(MarketAPI market) {
+        if (market == null) return null;
+        SubmarketAPI submarket = market.getSubmarket("megastructure_bayonet_storage");
+        if (submarket == null) return null;
+        return (bayonetSubmarketStorage) submarket.getPlugin();
     }
 }

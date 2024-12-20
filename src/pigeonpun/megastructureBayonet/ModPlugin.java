@@ -8,6 +8,7 @@ import org.magiclib.bounty.MagicBountyCampaignPlugin;
 public class ModPlugin extends BaseModPlugin {
     public static final String BAYONET_STORAGE_STATS_KEY = "bayonet_storage";
     public static final String BAYONET_SHIP_STORAGE_STATS_KEY = "bayonet_ship_storage";
+    public static final String BAYONET_SHIP_STORAGE_NO_STORE = "mega_bayonet_ship_storage_no_store";
     //todo: - Ability to transfer cargo (player cargo <-> Bayonet cargo)
     //todo - Emergency repair of fleet ^
     //todo - Customize station if possible (WIP)
