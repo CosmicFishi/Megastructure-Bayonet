@@ -9,13 +9,17 @@ public class ModPlugin extends BaseModPlugin {
     public static final String BAYONET_STORAGE_STATS_KEY = "bayonet_storage";
     public static final String BAYONET_SHIP_STORAGE_STATS_KEY = "bayonet_ship_storage";
     public static final String BAYONET_SHIP_STORAGE_NO_STORE = "mega_bayonet_ship_storage_no_store";
-    //todo: - Ability to transfer cargo (player cargo <-> Bayonet cargo)
-    //todo - Emergency repair of fleet ^
-    //todo - Customize station if possible (WIP)
-    //          Fix a issue where the station can be stored into storage.
+    //- Ability to transfer cargo (player cargo <-> Bayonet cargo) (done)
+    //- Emergency repair of fleet ^ - Nah
+    //- Customize station if possible (done)
+    //          Fix a issue where the station can be stored into storage. (done)
+    //todo - monthly fee applying to player
+    //todo - Station destroyed by enemy -> unrecoverable -> you have to build a brand new one
     //todo - Call in Bayonet in hyperspace and still get it to function ?
-    //todo - Megastructure integration ?
+    //todo - Megastructure integration (WIP) - Release v0.1.0
     //todo - animation - credit SirHarley
+    //todo - Have station "docked" in the planet selected - Release v0.2.0
+    //todo - Upgradable Station thru Megastructure - Release v1.0.0
     @Override
     public void onApplicationLoad() throws Exception {
         super.onApplicationLoad();
