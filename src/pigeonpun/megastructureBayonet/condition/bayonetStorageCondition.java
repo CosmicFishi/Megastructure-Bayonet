@@ -12,6 +12,7 @@ import com.fs.starfarer.api.impl.campaign.ids.Submarkets;
 import com.fs.starfarer.api.impl.campaign.submarkets.StoragePlugin;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
+import pigeonpun.megastructureBayonet.structure.bayonetManager;
 import pigeonpun.megastructureBayonet.structure.bayonetSubmarketStorage;
 
 import java.awt.*;
@@ -26,13 +27,13 @@ public class bayonetStorageCondition extends BaseMarketConditionPlugin {
     protected void createTooltipAfterDescription(TooltipMakerAPI tooltip, boolean expanded) {
         float opad = 10f;
         float pad = 3f;
-        float f = Misc.getStorageFeeFraction(); //todo: change this to a amount which can change
+        float f = bayonetManager.getStorageFeeFraction();
         int percent = (int) (f * 100f);
 
         Color h = Misc.getHighlightColor();
 
-        int cargoCost = (int) (getStorageCargoValue(market) * f);
-        int shipCost = (int) (getStorageShipValue(market) * f);
+        int cargoCost = bayonetManager.getStorageCargoTotalFee(market);
+        int shipCost = bayonetManager.getStorageShipTotalFee(market);
 
         if (cargoCost + shipCost > 0) {
             //tooltip.beginGrid(150, 1);
@@ -56,30 +57,5 @@ public class bayonetStorageCondition extends BaseMarketConditionPlugin {
     public void unapply(String id) {
 
     }
-    public static float getStorageCargoValue(MarketAPI market) {
-        bayonetSubmarketStorage plugin = getBayonetStorage(market);
-        if (plugin == null) return 0f;
-        float value = 0f;
-        for (CargoStackAPI stack : plugin.getCargo().getStacksCopy()) {
-            value += stack.getSize() * stack.getBaseValuePerUnit();
-        }
-        return value;
-    }
 
-    public static float getStorageShipValue(MarketAPI market) {
-        bayonetSubmarketStorage plugin = getBayonetStorage(market);
-        if (plugin == null) return 0f;
-        float value = 0f;
-
-        for (FleetMemberAPI member : plugin.getCargo().getMothballedShips().getMembersListCopy()) {
-            value += member.getBaseValue();
-        }
-        return value;
-    }
-    public static bayonetSubmarketStorage getBayonetStorage(MarketAPI market) {
-        if (market == null) return null;
-        SubmarketAPI submarket = market.getSubmarket("megastructure_bayonet_storage");
-        if (submarket == null) return null;
-        return (bayonetSubmarketStorage) submarket.getPlugin();
-    }
 }

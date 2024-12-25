@@ -4,17 +4,20 @@ import com.fs.starfarer.api.BaseModPlugin;
 import com.fs.starfarer.api.Global;
 import com.thoughtworks.xstream.XStream;
 import org.magiclib.bounty.MagicBountyCampaignPlugin;
+import pigeonpun.megastructureBayonet.structure.bayonetManager;
+import pigeonpun.megastructureBayonet.structure.bayonetStorageFee;
 
 public class ModPlugin extends BaseModPlugin {
-    public static final String BAYONET_STORAGE_STATS_KEY = "bayonet_storage";
     public static final String BAYONET_SHIP_STORAGE_STATS_KEY = "bayonet_ship_storage";
     public static final String BAYONET_SHIP_STORAGE_NO_STORE = "mega_bayonet_ship_storage_no_store";
     //- Ability to transfer cargo (player cargo <-> Bayonet cargo) (done)
     //- Emergency repair of fleet ^ - Nah
     //- Customize station if possible (done)
     //          Fix a issue where the station can be stored into storage. (done)
-    //todo - monthly fee applying to player
-    //todo - Station destroyed by enemy -> unrecoverable -> you have to build a brand new one
+    //todo - monthly fee applying to player (WIP)
+    //todo - Station destroyed by enemy -> unrecoverable -> you have to repair it
+    //      When destroyed, the station can not be summon anymore. Storage fee now apply with repair fee.
+    //      Optional difficulty: Some ships get "damaged"
     //todo - Call in Bayonet in hyperspace and still get it to function ?
     //todo - Megastructure integration (WIP) - Release v0.1.0
     //todo - animation - credit SirHarley
@@ -34,12 +37,15 @@ public class ModPlugin extends BaseModPlugin {
     @Override
     public void onGameLoad(boolean newGame) {
         Global.getSector().registerPlugin(new bayonetBaseCampaignPlugin());
+        //todo: move this into mgastructure project
+        bayonetManager.createBayonetStorageFee();
     }
 
     @Override
     public void configureXStream(XStream x) {
         super.configureXStream(x);
         x.alias("Megastructure_bayonetCampaignPlugin", bayonetBaseCampaignPlugin.class);
+        x.alias("Megastructure_bayonetStorageFee", bayonetStorageFee.class);
     }
     // You can add more methods from ModPlugin here. Press Control-O in IntelliJ to see options.
 }
