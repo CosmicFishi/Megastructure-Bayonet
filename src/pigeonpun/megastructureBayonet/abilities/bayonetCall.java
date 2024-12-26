@@ -26,7 +26,8 @@ public class bayonetCall extends BaseDurationAbility {
         if(activated) {
             return;
         }
-        bayonetManager.recreateBayonetStation();
+        //todo: disable when building/repairing/engaged in battle
+        bayonetManager.summonBayonetStation();
         activated = true;
     }
 

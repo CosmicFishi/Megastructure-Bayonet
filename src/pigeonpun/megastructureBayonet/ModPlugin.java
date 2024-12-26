@@ -14,10 +14,11 @@ public class ModPlugin extends BaseModPlugin {
     //- Emergency repair of fleet ^ - Nah
     //- Customize station if possible (done)
     //          Fix a issue where the station can be stored into storage. (done)
-    //todo - monthly fee applying to player (WIP)
+    //- monthly fee applying to player (done)
     //todo - Station destroyed by enemy -> unrecoverable -> you have to repair it
     //      When destroyed, the station can not be summon anymore. Storage fee now apply with repair fee.
     //      Optional difficulty: Some ships get "damaged"
+    //      Officer replacing seems to remove the AI core completely ? (May be ignorable if its a fleet commander)
     //todo - Call in Bayonet in hyperspace and still get it to function ?
     //todo - Megastructure integration (WIP) - Release v0.1.0
     //todo - animation - credit SirHarley

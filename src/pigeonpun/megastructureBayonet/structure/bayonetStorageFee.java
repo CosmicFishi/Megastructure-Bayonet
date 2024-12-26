@@ -1,6 +1,7 @@
 package pigeonpun.megastructureBayonet.structure;
 
 import com.fs.starfarer.api.Global;
+import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.CargoAPI;
 import com.fs.starfarer.api.campaign.FactionAPI;
 import com.fs.starfarer.api.campaign.SubmarketPlugin;
@@ -21,7 +22,8 @@ public class bayonetStorageFee implements EconomyTickListener, TooltipMakerAPI.T
     public static final String BAYONET_STORAGE_FEE_KEY = "$bayonet_storage_fee";
     MarketAPI market;
     bayonetStorageFee() {
-        market = bayonetManager.getBayonetMarket();
+        CampaignFleetAPI bayonetStation = bayonetManager.getBayonetStationFleet();
+        market = bayonetStation.getMarket();
         Global.getSector().getListenerManager().addListener(this);
         Global.getSector().getMemoryWithoutUpdate().set(BAYONET_STORAGE_FEE_KEY, this);
     }
@@ -83,8 +85,9 @@ public class bayonetStorageFee implements EconomyTickListener, TooltipMakerAPI.T
 
     @Override
     public void createTooltip(TooltipMakerAPI tooltip, boolean expanded, Object tooltipParam) {
-        int cargoCost = bayonetManager.getStorageCargoTotalFee(bayonetManager.getBayonetMarket());
-        int shipCost = bayonetManager.getStorageShipTotalFee(bayonetManager.getBayonetMarket());
+        CampaignFleetAPI bayonetStation = bayonetManager.getBayonetStationFleet();
+        int cargoCost = bayonetManager.getStorageCargoTotalFee(bayonetStation.getMarket());
+        int shipCost = bayonetManager.getStorageShipTotalFee(bayonetStation.getMarket());
         int totalCost = -(cargoCost + shipCost);
         float pad = 3f;
         float opad = 10f;
@@ -97,7 +100,7 @@ public class bayonetStorageFee implements EconomyTickListener, TooltipMakerAPI.T
         Color grid = faction.getGridUIColor();
         Color bright = faction.getBrightUIColor();
 
-        SubmarketPlugin storage = bayonetManager.getBayonetStorage();
+        SubmarketPlugin storage = bayonetManager.getBayonetStorage(bayonetStation);
 
         CargoAPI cargo = Global.getFactory().createCargo(true);
         List<FleetMemberAPI> ships = new ArrayList<FleetMemberAPI>();

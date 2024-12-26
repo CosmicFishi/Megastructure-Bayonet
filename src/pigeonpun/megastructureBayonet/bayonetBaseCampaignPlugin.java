@@ -21,7 +21,7 @@ public class bayonetBaseCampaignPlugin extends BaseCampaignPlugin {
 
     @Override
     public PluginPick<InteractionDialogPlugin> pickInteractionDialogPlugin(SectorEntityToken interactionTarget) {
-        if(interactionTarget.getMemoryWithoutUpdate().get(bayonetManager.bayonet_entity_ID) != null) {
+        if(interactionTarget.getMemoryWithoutUpdate().get(bayonetManager.BAYONET_ENTITY_ID) != null) {
             return new PluginPick<InteractionDialogPlugin>(new RuleBasedInteractionDialogPluginImpl(), PickPriority.MOD_SPECIFIC);
         }
         return super.pickInteractionDialogPlugin(interactionTarget);
