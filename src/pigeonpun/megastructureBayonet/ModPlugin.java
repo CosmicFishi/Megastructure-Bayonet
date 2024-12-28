@@ -8,8 +8,6 @@ import pigeonpun.megastructureBayonet.structure.bayonetManager;
 import pigeonpun.megastructureBayonet.structure.bayonetStorageFee;
 
 public class ModPlugin extends BaseModPlugin {
-    public static final String BAYONET_SHIP_STORAGE_STATS_KEY = "bayonet_ship_storage";
-    public static final String BAYONET_SHIP_STORAGE_NO_STORE = "mega_bayonet_ship_storage_no_store";
     //- Ability to transfer cargo (player cargo <-> Bayonet cargo) (done)
     //- Emergency repair of fleet ^ - Nah
     //- Customize station if possible (done)

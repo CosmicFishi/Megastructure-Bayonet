@@ -57,5 +57,4 @@ public class bayonetStorageCondition extends BaseMarketConditionPlugin {
     public void unapply(String id) {
 
     }
-
 }

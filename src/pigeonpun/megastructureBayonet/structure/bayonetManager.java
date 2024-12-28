@@ -2,6 +2,8 @@ package pigeonpun.megastructureBayonet.structure;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.*;
+import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin;
+import com.fs.starfarer.api.campaign.comm.IntelManagerAPI;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.campaign.econ.SubmarketAPI;
 import com.fs.starfarer.api.campaign.listeners.FleetEventListener;
@@ -18,8 +20,10 @@ import com.fs.starfarer.api.impl.campaign.submarkets.StoragePlugin;
 import com.fs.starfarer.api.util.Misc;
 import org.apache.log4j.Logger;
 import org.magiclib.bounty.MagicBountyBattleListener;
+import org.magiclib.bounty.MagicBountyIntel;
 import pigeonpun.megastructureBayonet.ModPlugin;
 
+import java.util.List;
 import java.util.Random;
 
 import static pigeonpun.megastructureBayonet.structure.bayonetStorageFee.BAYONET_STORAGE_FEE_KEY;
@@ -30,6 +34,11 @@ public class bayonetManager {
     public static final String BAYONET_ENTITY_ID = "$mega_bayonet";
     public static final String BAYONET_ENTITY_TAG = "mega_bayonet";
     public static final String BAYONET_ENTITY_STATUS_DATA = "mega_bayonet_broke_down";
+    public static final String BAYONET_SHIP_STORAGE_STATS_KEY = "bayonet_ship_storage";
+    public static final String BAYONET_SHIP_STORAGE_NO_STORE_TAG = "mega_bayonet_ship_storage_no_store";
+    public static final String BAYONET_SHIP_STATION_REPAIR_DAY_STATS_KEY = "bayonet_ship_station_repair_day";
+    public static final int BASE_REPAIR_DAY = 90;
+
 
     enum BAYONET_STATION_STATUS {
         REPAIRING, FUNCTIONAL, BUILDING
@@ -85,7 +94,7 @@ public class bayonetManager {
     }
     public static boolean isBayonetRepairing(CampaignFleetAPI bayonetStation) {
         if(bayonetStation.getCustomData().get(BAYONET_ENTITY_STATUS_DATA) != null && bayonetStation.getCustomData().get(BAYONET_ENTITY_STATUS_DATA) instanceof BAYONET_STATION_STATUS) {
-            if(bayonetStation.getCustomData().equals(BAYONET_STATION_STATUS.REPAIRING)) {
+            if(bayonetStation.getCustomData().get(BAYONET_ENTITY_STATUS_DATA).equals(BAYONET_STATION_STATUS.REPAIRING)) {
                 return true;
             }
         }
@@ -93,7 +102,7 @@ public class bayonetManager {
     }
     public static boolean isBayonetFunctional(CampaignFleetAPI bayonetStation) {
         if(bayonetStation.getCustomData().get(BAYONET_ENTITY_STATUS_DATA) != null && bayonetStation.getCustomData().get(BAYONET_ENTITY_STATUS_DATA) instanceof BAYONET_STATION_STATUS) {
-            if(bayonetStation.getCustomData().equals(BAYONET_STATION_STATUS.FUNCTIONAL)) {
+            if(bayonetStation.getCustomData().get(BAYONET_ENTITY_STATUS_DATA).equals(BAYONET_STATION_STATUS.FUNCTIONAL)) {
                 return true;
             }
         }
@@ -101,7 +110,7 @@ public class bayonetManager {
     }
     public static boolean isBayonetBuilding(CampaignFleetAPI bayonetStation) {
         if(bayonetStation.getCustomData().get(BAYONET_ENTITY_STATUS_DATA) != null && bayonetStation.getCustomData().get(BAYONET_ENTITY_STATUS_DATA) instanceof BAYONET_STATION_STATUS) {
-            if(bayonetStation.getCustomData().equals(BAYONET_STATION_STATUS.BUILDING)) {
+            if(bayonetStation.getCustomData().get(BAYONET_ENTITY_STATUS_DATA).equals(BAYONET_STATION_STATUS.BUILDING)) {
                 return true;
             }
         }
@@ -139,14 +148,25 @@ public class bayonetManager {
         bayonetStation.getCustomData().put(BAYONET_ENTITY_STATUS_DATA, status);
         switch (status) {
             case REPAIRING:
-                if(status.equals(BAYONET_STATION_STATUS.REPAIRING)) {
-                    for(FleetMemberAPI fleetMember: bayonetStation.getFleetData().getMembersListCopy()) {
-                        fleetMember.getRepairTracker().setMothballed(true);
-                        fleetMember.getRepairTracker().setCR(0);
-                    }
+                for(FleetMemberAPI fleetMember: bayonetStation.getFleetData().getMembersListCopy()) {
+                    fleetMember.getRepairTracker().setMothballed(true);
+                    fleetMember.getRepairTracker().setCR(0);
+                    //todo: custom hullmod to set max CR to 0 and to remove the mothballed
                 }
+                bayonetStation.getMemoryWithoutUpdate().unset(MemFlags.MEMORY_KEY_MAKE_AGGRESSIVE);
+                bayonetStation.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_MAKE_NON_AGGRESSIVE, true);
+                bayonetStation.getMemoryWithoutUpdate().set(MemFlags.FLEET_IGNORED_BY_OTHER_FLEETS, true);
+
+                //todo: status intel
+//                IntelManagerAPI intelManager = Global.getSector().getIntelManager();
+//                List<IntelInfoPlugin> existingMagicIntel = intelManager.getIntel(MagicBountyIntel.class);
+//                MagicBountyIntel intelForBounty = null;
                 break;
             case FUNCTIONAL:
+                bayonetStation.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_MAKE_AGGRESSIVE, true);
+                bayonetStation.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_NO_JUMP, true);
+                bayonetStation.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_MAKE_ALLOW_DISENGAGE, true);
+                bayonetStation.getMemoryWithoutUpdate().unset(MemFlags.FLEET_IGNORED_BY_OTHER_FLEETS);
                 break;
             case BUILDING:
                 //todo: add days
@@ -161,6 +181,7 @@ public class bayonetManager {
      */
     public static void summonBayonetStation() {
         CampaignFleetAPI bayonetStation = getBayonetStationFleet();
+        if(isBayonetRepairing(bayonetStation) || isBayonetBuilding(bayonetStation)) return;
         //if station location is different from current player location -> remove the old station -> create a new one at the new location
         //todo: create in hyperspace
         if(bayonetStation.getContainingLocation() != null && !bayonetStation.getContainingLocation().getId().equals(Global.getSector().getCurrentLocation().getId())) {
@@ -200,6 +221,8 @@ public class bayonetManager {
         fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_MAKE_AGGRESSIVE, true);
         fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_NO_JUMP, true);
         fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_MAKE_ALLOW_DISENGAGE, true);
+        fleet.getStats().getDynamic().getMod(BAYONET_SHIP_STATION_REPAIR_DAY_STATS_KEY).modifyFlat(BAYONET_SHIP_STATION_REPAIR_DAY_STATS_KEY, BASE_REPAIR_DAY);
+
         fleet.setStationMode(true);
 
         fleet.clearAbilities();

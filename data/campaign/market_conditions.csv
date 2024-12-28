@@ -1,3 +1,3 @@
 name,id,planetary,decivRemove,script,desc,icon,order
 Storage Information,megastructure_bayonet_storage_condition,TRUE,,pigeonpun.megastructureBayonet.condition.bayonetStorageCondition,Display information related to the Bayonet's storage.,graphics/icons/markets/bayonet_storage.png,1000
-,,,,,,,
+Station Information,megastructure_bayonet_station_condition,,,pigeonpun.megastructureBayonet.condition.bayonetStationCondition,Display information related to the Bayonet's station.,graphics/icons/markets/bayonet_station.png,

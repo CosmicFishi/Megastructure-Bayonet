@@ -19,7 +19,7 @@ public class bayonetSubmarketStorage extends StoragePlugin {
     public void init(SubmarketAPI submarket) {
         super.init(submarket);
 //        submarket.getMarket().getStats().getDynamic().getMod(ModPlugin.BAYONET_STORAGE_STATS_KEY).modifyFlat(ModPlugin.BAYONET_STORAGE_STATS_KEY, BASE_STORAGE);
-        submarket.getMarket().getStats().getDynamic().getMod(ModPlugin.BAYONET_SHIP_STORAGE_STATS_KEY).modifyFlat(ModPlugin.BAYONET_SHIP_STORAGE_STATS_KEY, BASE_STORAGE_SHIP);
+        submarket.getMarket().getStats().getDynamic().getMod(bayonetManager.BAYONET_SHIP_STORAGE_STATS_KEY).modifyFlat(bayonetManager.BAYONET_SHIP_STORAGE_STATS_KEY, BASE_STORAGE_SHIP);
     }
 
 //    public int getTotalModifiedStorageSpace() {
@@ -28,7 +28,7 @@ public class bayonetSubmarketStorage extends StoragePlugin {
 //    }
     public int getTotalModifiedShipStorageSpace() {
         MutableMarketStatsAPI stats = market.getStats();
-        return (int) Math.floor(stats.getDynamic().getMod(ModPlugin.BAYONET_SHIP_STORAGE_STATS_KEY).computeEffective(0f));
+        return (int) Math.floor(stats.getDynamic().getMod(bayonetManager.BAYONET_SHIP_STORAGE_STATS_KEY).computeEffective(0f));
     }
 //    public int getCurrentStorageSpace() {
 //            int count = 0;
@@ -62,7 +62,7 @@ public class bayonetSubmarketStorage extends StoragePlugin {
     @Override
     public boolean isIllegalOnSubmarket(FleetMemberAPI member, TransferAction action) {
         if(action.equals(TransferAction.PLAYER_SELL)) {
-            if(member.getVariant().getTags().contains(bayonetManager.BAYONET_ENTITY_TAG) || member.getVariant().getTags().contains(ModPlugin.BAYONET_SHIP_STORAGE_NO_STORE) ){
+            if(member.getVariant().getTags().contains(bayonetManager.BAYONET_ENTITY_TAG) || member.getVariant().getTags().contains(bayonetManager.BAYONET_SHIP_STORAGE_NO_STORE_TAG) ){
                 return true;
             }
             return getCurrentShipStorageSpace() >= getTotalModifiedShipStorageSpace();
@@ -72,7 +72,7 @@ public class bayonetSubmarketStorage extends StoragePlugin {
 
     @Override
     public String getIllegalTransferText(FleetMemberAPI member, TransferAction action) {
-        if(member.getVariant().getTags().contains(bayonetManager.BAYONET_ENTITY_TAG) || member.getVariant().getTags().contains(ModPlugin.BAYONET_SHIP_STORAGE_NO_STORE)){
+        if(member.getVariant().getTags().contains(bayonetManager.BAYONET_ENTITY_TAG) || member.getVariant().getTags().contains(bayonetManager.BAYONET_SHIP_STORAGE_NO_STORE_TAG)){
             return "Unavailable";
         }
         return "No ship cargo space available";
