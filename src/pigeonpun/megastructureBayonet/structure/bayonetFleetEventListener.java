@@ -65,6 +65,7 @@ public class bayonetFleetEventListener implements FleetEventListener, EveryFrame
             if (repairingTimeLeft <= 0) {
                 repairingTimeLeft = 0;
             }
+            //todo: move repairingTimeLeft into statusData
             fleet.addFloatingText("Repairing", Color.red, 0.0000000001f);
         }
     }

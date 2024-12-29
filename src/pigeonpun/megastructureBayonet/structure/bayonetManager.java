@@ -34,16 +34,20 @@ public class bayonetManager {
     public static final String BAYONET_ENTITY_ID = "$mega_bayonet";
     public static final String BAYONET_ENTITY_TAG = "mega_bayonet";
     public static final String BAYONET_ENTITY_STATUS_DATA = "mega_bayonet_broke_down";
+    public static final String BAYONET_ENTITY_STATUS_DATA_MEM_KEY = "$mega_bayonet_status";
     public static final String BAYONET_SHIP_STORAGE_STATS_KEY = "bayonet_ship_storage";
     public static final String BAYONET_SHIP_STORAGE_NO_STORE_TAG = "mega_bayonet_ship_storage_no_store";
     public static final String BAYONET_SHIP_STATION_REPAIR_DAY_STATS_KEY = "bayonet_ship_station_repair_day";
     public static final int BASE_REPAIR_DAY = 90;
 
-
     enum BAYONET_STATION_STATUS {
         REPAIRING, FUNCTIONAL, BUILDING
     }
-
+    public static class bayonetStatusData {
+        public float dayLeftBeforeFunctional = 0f;
+        public BAYONET_STATION_STATUS status = BAYONET_STATION_STATUS.FUNCTIONAL;
+        public bayonetStatusData() {}
+    }
     public static float getStorageFeeFraction() {
         float storageFreeFraction = Global.getSettings().getFloat("bayonet_storageFreeFraction");
         return storageFreeFraction;
@@ -93,34 +97,28 @@ public class bayonetManager {
         return (bayonetSubmarketStorage) submarket.getPlugin();
     }
     public static boolean isBayonetRepairing(CampaignFleetAPI bayonetStation) {
-        if(bayonetStation.getCustomData().get(BAYONET_ENTITY_STATUS_DATA) != null && bayonetStation.getCustomData().get(BAYONET_ENTITY_STATUS_DATA) instanceof BAYONET_STATION_STATUS) {
-            if(bayonetStation.getCustomData().get(BAYONET_ENTITY_STATUS_DATA).equals(BAYONET_STATION_STATUS.REPAIRING)) {
-                return true;
-            }
-        }
-        return false;
+        return getCurrentBayonetStatus(bayonetStation).status.equals(BAYONET_STATION_STATUS.REPAIRING);
     }
     public static boolean isBayonetFunctional(CampaignFleetAPI bayonetStation) {
-        if(bayonetStation.getCustomData().get(BAYONET_ENTITY_STATUS_DATA) != null && bayonetStation.getCustomData().get(BAYONET_ENTITY_STATUS_DATA) instanceof BAYONET_STATION_STATUS) {
-            if(bayonetStation.getCustomData().get(BAYONET_ENTITY_STATUS_DATA).equals(BAYONET_STATION_STATUS.FUNCTIONAL)) {
-                return true;
-            }
-        }
-        return false;
+        return getCurrentBayonetStatus(bayonetStation).status.equals(BAYONET_STATION_STATUS.FUNCTIONAL);
     }
     public static boolean isBayonetBuilding(CampaignFleetAPI bayonetStation) {
-        if(bayonetStation.getCustomData().get(BAYONET_ENTITY_STATUS_DATA) != null && bayonetStation.getCustomData().get(BAYONET_ENTITY_STATUS_DATA) instanceof BAYONET_STATION_STATUS) {
-            if(bayonetStation.getCustomData().get(BAYONET_ENTITY_STATUS_DATA).equals(BAYONET_STATION_STATUS.BUILDING)) {
-                return true;
-            }
-        }
-        return false;
+        return getCurrentBayonetStatus(bayonetStation).status.equals(BAYONET_STATION_STATUS.BUILDING);
     }
-    public static BAYONET_STATION_STATUS getCurrentBayonetStatus(CampaignFleetAPI bayonetStation) {
-        if(bayonetStation.getCustomData().get(BAYONET_ENTITY_STATUS_DATA) != null && bayonetStation.getCustomData().get(BAYONET_ENTITY_STATUS_DATA) instanceof BAYONET_STATION_STATUS) {
-            return (BAYONET_STATION_STATUS) bayonetStation.getCustomData().get(BAYONET_ENTITY_STATUS_DATA);
+
+    /**
+     * @param bayonetStation
+     * @return create new status if {@code bayonetStation} is null
+     */
+    public static bayonetStatusData getCurrentBayonetStatus(CampaignFleetAPI bayonetStation) {
+        bayonetStatusData data;
+        if(bayonetStation != null && bayonetStation.getCustomData().get(BAYONET_ENTITY_STATUS_DATA) != null && bayonetStation.getCustomData().get(BAYONET_ENTITY_STATUS_DATA) instanceof bayonetStatusData) {
+            data = (bayonetStatusData) bayonetStation.getCustomData().get(BAYONET_ENTITY_STATUS_DATA);
+        } else {
+            log.info("Can't find Bayonet status data, obtaining a new status");
+            data = new bayonetStatusData();
         }
-        return BAYONET_STATION_STATUS.FUNCTIONAL;
+        return data;
     }
     /**
      * As the name imply, get Bayonet Station fleet, if it doesn't exist, create a new Bayonet fleet + market
@@ -133,7 +131,8 @@ public class bayonetManager {
             stationFleet = (CampaignFleetAPI) Global.getSector().getMemoryWithoutUpdate().get(BAYONET_STATION_MEMORY_ID);
         } else {
             //create new station
-            stationFleet = createStation(BAYONET_STATION_STATUS.FUNCTIONAL);
+            log.info("Can't find Bayonet Station in memory. Creating new station");
+            stationFleet = createStation(getCurrentBayonetStatus(null));
             Global.getSector().getMemoryWithoutUpdate().set(BAYONET_STATION_MEMORY_ID, stationFleet);
         }
         return stationFleet;
@@ -145,7 +144,9 @@ public class bayonetManager {
      * @return
      */
     public static void changeBayonetStationStatus(BAYONET_STATION_STATUS status, CampaignFleetAPI bayonetStation) {
-        bayonetStation.getCustomData().put(BAYONET_ENTITY_STATUS_DATA, status);
+        if(bayonetStation == null) return;
+        bayonetStatusData data = getCurrentBayonetStatus(bayonetStation);
+        data.status = status;
         switch (status) {
             case REPAIRING:
                 for(FleetMemberAPI fleetMember: bayonetStation.getFleetData().getMembersListCopy()) {
@@ -172,11 +173,13 @@ public class bayonetManager {
                 //todo: add days
                 break;
         }
+        log.info("Changed Bayonet Station status to " + status.toString());
+        bayonetStation.getCustomData().put(BAYONET_ENTITY_STATUS_DATA, data);
         Global.getSector().getMemoryWithoutUpdate().set(BAYONET_STATION_MEMORY_ID, bayonetStation);
     }
     /**
      * Actually summoning the station.
-     * todo: cant summon if its repairing/building
+     * - cant summon if its repairing/building (DONE)
      * todo: Add function for devmode to be able to summon the station to location even if repairing/building
      */
     public static void summonBayonetStation() {
@@ -198,6 +201,7 @@ public class bayonetManager {
         //Recreating new one from memory still need to set a location
         bayonetStation.setContainingLocation(Global.getSector().getCurrentLocation());
         bayonetStation.setLocation(Global.getSector().getPlayerFleet().getLocation().x, Global.getSector().getPlayerFleet().getLocation().y);
+        log.info("Summoning Bayonet Station to location [" + Global.getSector().getPlayerFleet().getLocation().toString() + "] in " + Global.getSector().getCurrentLocation());
 
         //save it to memory after summoning
         Global.getSector().getMemoryWithoutUpdate().set(BAYONET_STATION_MEMORY_ID, bayonetStation);
@@ -209,11 +213,11 @@ public class bayonetManager {
         return member;
     }
     /**
-     * Only create the Bayonet fleet with certain status, doesn't save it to memory, doesn't set location
+     * Only create the Bayonet fleet with certain status, save it to memory, doesn't set location
      * @param status
      * @return
      */
-    public static CampaignFleetAPI createStation(BAYONET_STATION_STATUS status) {
+    public static CampaignFleetAPI createStation(bayonetStatusData status) {
         CampaignFleetAPI fleet = FleetFactoryV3.createEmptyFleet(Factions.PLAYER, FleetTypes.BATTLESTATION, null);
         //todo: select which station to have "installed" on Bayonet
         FleetMemberAPI member = createBayonetStationMember();
@@ -276,12 +280,13 @@ public class bayonetManager {
         fleet.addTag(Tags.STATION);
 
         //Status related
-        if(status.equals(BAYONET_STATION_STATUS.REPAIRING)) {
-            for(FleetMemberAPI fleetMember: fleet.getFleetData().getMembersListCopy()) {
-                fleetMember.getRepairTracker().setCrashMothballed(true);
-            }
-        }
-        fleet.getCustomData().put(BAYONET_ENTITY_STATUS_DATA, status);
+//        if(status.equals(BAYONET_STATION_STATUS.REPAIRING)) {
+//            for(FleetMemberAPI fleetMember: fleet.getFleetData().getMembersListCopy()) {
+//                fleetMember.getRepairTracker().setCrashMothballed(true);
+//            }
+//        }
+//        fleet.getCustomData().put(BAYONET_ENTITY_STATUS_DATA, status);
+        changeBayonetStationStatus(status.status, fleet);
         //todo: building status, include a day counter
 
         return fleet;

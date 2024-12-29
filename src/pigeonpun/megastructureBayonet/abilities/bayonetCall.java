@@ -69,6 +69,6 @@ public class bayonetCall extends BaseDurationAbility {
     @Override
     public boolean isUsable() {
         CampaignFleetAPI fleet = bayonetManager.getBayonetStationFleet();
-        return bayonetManager.isBayonetFunctional(fleet);
+        return bayonetManager.isBayonetFunctional(fleet) && super.isUsable();
     }
 }
