@@ -2,9 +2,7 @@ package pigeonpun.megastructureBayonet.structure;
 
 import com.fs.starfarer.api.EveryFrameScript;
 import com.fs.starfarer.api.Global;
-import com.fs.starfarer.api.campaign.BattleAPI;
-import com.fs.starfarer.api.campaign.CampaignEventListener;
-import com.fs.starfarer.api.campaign.CampaignFleetAPI;
+import com.fs.starfarer.api.campaign.*;
 import com.fs.starfarer.api.campaign.listeners.FleetEventListener;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
@@ -14,11 +12,11 @@ import java.awt.*;
 
 public class bayonetFleetEventListener implements FleetEventListener, EveryFrameScript {
     public static final Logger log = Global.getLogger(bayonetFleetEventListener.class);
-    CampaignFleetAPI fleet;
+    CampaignFleetAPI bayonetFleet;
     protected float repairingTimeLeft = 0f;
-    
+
     public bayonetFleetEventListener(CampaignFleetAPI fleet) {
-        this.fleet = fleet;
+        this.bayonetFleet = fleet;
     }
     @Override
     public void reportFleetDespawnedToListener(CampaignFleetAPI fleet, CampaignEventListener.FleetDespawnReason reason, Object param) {
@@ -46,7 +44,7 @@ public class bayonetFleetEventListener implements FleetEventListener, EveryFrame
 
     @Override
     public boolean runWhilePaused() {
-        return false;
+        return true;
     }
 
     public void notifyRepairing(float duration) {
@@ -58,7 +56,7 @@ public class bayonetFleetEventListener implements FleetEventListener, EveryFrame
 
     @Override
     public void advance(float amount) {
-        if (bayonetManager.isBayonetRepairing(fleet)) {
+        if (bayonetManager.isBayonetRepairing(bayonetFleet)) {
             float days = Global.getSector().getClock().convertToDays(amount);
 
             repairingTimeLeft -= days;
@@ -66,7 +64,32 @@ public class bayonetFleetEventListener implements FleetEventListener, EveryFrame
                 repairingTimeLeft = 0;
             }
             //todo: move repairingTimeLeft into statusData
-            fleet.addFloatingText("Repairing", Color.red, 0.0000000001f);
+            bayonetFleet.addFloatingText("Repairing", Color.red, 0.0000000001f);
         }
+        //todo: need to fix this, fleet member not being sync
+        if(Global.getSector().getCampaignUI().getCurrentCoreTab() != null) {
+            FleetMemberAPI bayonetStation = bayonetFleet.getFleetData().getMembersListCopy().get(0);
+            if(Global.getSector().getCampaignUI().getCurrentCoreTab().equals(CoreUITabId.REFIT) && !isBayonetAdded()) {
+                //adding it to player fleet
+                Global.getSector().getPlayerFleet().getFleetData().addFleetMember(bayonetStation);
+                Global.getSector().getPlayerFleet().getFleetData().syncMemberLists();
+            } else {
+                if(!Global.getSector().getCampaignUI().getCurrentCoreTab().equals(CoreUITabId.REFIT) && isBayonetAdded()) {
+                    //removing the station if it's not refit UI
+                    Global.getSector().getPlayerFleet().getFleetData().removeFleetMember(bayonetStation);
+                    Global.getSector().getPlayerFleet().getFleetData().syncMemberLists();
+                    log.info("aaaaaaaaaaa");
+                }
+            }
+        }
+    }
+    public boolean isBayonetAdded() {
+        FleetDataAPI playerFleetData = Global.getSector().getPlayerFleet().getFleetData();
+        for(FleetMemberAPI member: playerFleetData.getMembersListCopy()) {
+            if(member.getId().equals(bayonetFleet.getFleetData().getMembersListCopy().get(0).getId())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

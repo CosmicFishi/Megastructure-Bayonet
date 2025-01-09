@@ -5,8 +5,7 @@ $menuState == main
 $mega_bayonet","RemoveOption marketVisitBar
 RemoveOption marketOpenCoreUI
 RemoveOption marketLeave
-SetShortcut bayonet_marketLeave ""ESCAPE""
-bayonetAddStationRefit",,"10:marketOpenCargo:Transfer cargo
+SetShortcut bayonet_marketLeave ""ESCAPE""",,"10:marketOpenCargo:Transfer cargo
 11:marketOpenFleet:Transfer ships
 12:marketRefit:Use the local facilities to refit your $shipOrFleet
 100:bayonet_marketLeave:Leave",
