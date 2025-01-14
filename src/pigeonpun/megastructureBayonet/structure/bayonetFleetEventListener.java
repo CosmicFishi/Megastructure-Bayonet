@@ -66,20 +66,27 @@ public class bayonetFleetEventListener implements FleetEventListener, EveryFrame
             //todo: move repairingTimeLeft into statusData
             bayonetFleet.addFloatingText("Repairing", Color.red, 0.0000000001f);
         }
-        //todo: need to fix this, fleet member not being sync
         if(Global.getSector().getCampaignUI().getCurrentCoreTab() != null) {
             FleetMemberAPI bayonetStation = bayonetFleet.getFleetData().getMembersListCopy().get(0);
             if(Global.getSector().getCampaignUI().getCurrentCoreTab().equals(CoreUITabId.REFIT) && !isBayonetAdded()) {
                 //adding it to player fleet
                 Global.getSector().getPlayerFleet().getFleetData().addFleetMember(bayonetStation);
-                Global.getSector().getPlayerFleet().getFleetData().syncMemberLists();
+                //Core UI doesn't sync up completely with the member adding, force opening the UI tab again seems to do the trick
+                //if it works, it workS
+                Global.getSector().getCampaignUI().showCoreUITab(Global.getSector().getCampaignUI().getCurrentCoreTab());
             } else {
                 if(!Global.getSector().getCampaignUI().getCurrentCoreTab().equals(CoreUITabId.REFIT) && isBayonetAdded()) {
                     //removing the station if it's not refit UI
                     Global.getSector().getPlayerFleet().getFleetData().removeFleetMember(bayonetStation);
-                    Global.getSector().getPlayerFleet().getFleetData().syncMemberLists();
-                    log.info("aaaaaaaaaaa");
+                    //if it works, it workS
+                    Global.getSector().getCampaignUI().showCoreUITab(Global.getSector().getCampaignUI().getCurrentCoreTab());
                 }
+            }
+        } else {
+            //When player close refit
+            if(isBayonetAdded()) {
+                FleetMemberAPI bayonetStation = bayonetFleet.getFleetData().getMembersListCopy().get(0);
+                Global.getSector().getPlayerFleet().getFleetData().removeFleetMember(bayonetStation);
             }
         }
     }

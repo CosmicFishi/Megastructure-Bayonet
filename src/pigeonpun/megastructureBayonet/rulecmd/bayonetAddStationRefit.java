@@ -16,6 +16,7 @@ import java.util.Map;
 public class bayonetAddStationRefit extends BaseCommandPlugin {
     @Override
     public boolean execute(String ruleId, InteractionDialogAPI dialog, List<Misc.Token> params, Map<String, MemoryAPI> memoryMap) {
+        //unused - adding via bayonetFleetEventListener
         if(dialog.getInteractionTarget() != null && dialog.getInteractionTarget() instanceof CampaignFleetAPI && dialog.getInteractionTarget().getMemoryWithoutUpdate().get(bayonetManager.BAYONET_ENTITY_ID) != null) {
             CampaignFleetAPI fleet = (CampaignFleetAPI) dialog.getInteractionTarget();
             if(fleet.getFleetData() != null && !fleet.getFleetData().getMembersListCopy().isEmpty()) {
