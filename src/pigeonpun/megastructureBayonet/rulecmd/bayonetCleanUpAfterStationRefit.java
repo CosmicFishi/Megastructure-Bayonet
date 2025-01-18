@@ -30,6 +30,7 @@ public class bayonetCleanUpAfterStationRefit extends BaseCommandPlugin {
                     break;
                 }
             }
+            Global.getSector().getMemoryWithoutUpdate().set("$bayonet_isFleetEncounter", false);
         }
         return false;
     }

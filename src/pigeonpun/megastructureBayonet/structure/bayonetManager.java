@@ -2,29 +2,15 @@ package pigeonpun.megastructureBayonet.structure;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.*;
-import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin;
-import com.fs.starfarer.api.campaign.comm.IntelManagerAPI;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.campaign.econ.SubmarketAPI;
 import com.fs.starfarer.api.campaign.listeners.FleetEventListener;
-import com.fs.starfarer.api.characters.PersonAPI;
-import com.fs.starfarer.api.combat.BattleCreationContext;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.fleet.FleetMemberType;
-import com.fs.starfarer.api.impl.campaign.FleetEncounterContext;
-import com.fs.starfarer.api.impl.campaign.FleetInteractionDialogPluginImpl;
 import com.fs.starfarer.api.impl.campaign.fleets.FleetFactoryV3;
 import com.fs.starfarer.api.impl.campaign.ids.*;
-import com.fs.starfarer.api.impl.campaign.procgen.themes.RemnantSeededFleetManager;
 import com.fs.starfarer.api.impl.campaign.submarkets.StoragePlugin;
-import com.fs.starfarer.api.util.Misc;
 import org.apache.log4j.Logger;
-import org.magiclib.bounty.MagicBountyBattleListener;
-import org.magiclib.bounty.MagicBountyIntel;
-import pigeonpun.megastructureBayonet.ModPlugin;
-
-import java.util.List;
-import java.util.Random;
 
 import static pigeonpun.megastructureBayonet.structure.bayonetStorageFee.BAYONET_STORAGE_FEE_KEY;
 
@@ -38,15 +24,34 @@ public class bayonetManager {
     public static final String BAYONET_SHIP_STORAGE_STATS_KEY = "bayonet_ship_storage";
     public static final String BAYONET_SHIP_STORAGE_NO_STORE_TAG = "mega_bayonet_ship_storage_no_store";
     public static final String BAYONET_SHIP_STATION_REPAIR_DAY_STATS_KEY = "bayonet_ship_station_repair_day";
-    public static final int BASE_REPAIR_DAY = 90;
+    public static final String BAYONET_SHIP_STATION_BUILD_DAY_STATS_KEY = "bayonet_ship_station_build_day";
+    public static final int BASE_REPAIR_DAY = 5;
+    public static final int BASE_BUILD_DAY = 180; //todo: change this to the station industry build days
 
-    enum BAYONET_STATION_STATUS {
+    public enum BAYONET_STATION_STATUS {
         REPAIRING, FUNCTIONAL, BUILDING
     }
     public static class bayonetStatusData {
         public float dayLeftBeforeFunctional = 0f;
         public BAYONET_STATION_STATUS status = BAYONET_STATION_STATUS.FUNCTIONAL;
         public bayonetStatusData() {}
+    }
+
+    /**
+     * Get total repair days of Bayonet Station once station's status turn into {@code BAYONET_STATION_STATUS.REPAIRING}
+     * @param bayonetStation
+     * @return
+     */
+    public static float getTotalRepairDay(CampaignFleetAPI bayonetStation) {
+        return bayonetStation.getStats().getDynamic().getMod(BAYONET_SHIP_STATION_REPAIR_DAY_STATS_KEY).computeEffective(0f);
+    }
+    /**
+     * Get total repair days of Bayonet Station once station's status turn into {@code BAYONET_STATION_STATUS.BUILDING}
+     * @param bayonetStation
+     * @return
+     */
+    public static float getTotalBuildDay(CampaignFleetAPI bayonetStation) {
+        return bayonetStation.getStats().getDynamic().getMod(BAYONET_SHIP_STATION_BUILD_DAY_STATS_KEY).computeEffective(0f);
     }
     public static float getStorageFeeFraction() {
         float storageFreeFraction = Global.getSettings().getFloat("bayonet_storageFreeFraction");
@@ -157,20 +162,30 @@ public class bayonetManager {
                 bayonetStation.getMemoryWithoutUpdate().unset(MemFlags.MEMORY_KEY_MAKE_AGGRESSIVE);
                 bayonetStation.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_MAKE_NON_AGGRESSIVE, true);
                 bayonetStation.getMemoryWithoutUpdate().set(MemFlags.FLEET_IGNORED_BY_OTHER_FLEETS, true);
+                bayonetStation.setNullAIActionText("Repairing...");
+                data.dayLeftBeforeFunctional = getTotalRepairDay(bayonetStation);
 
-                //todo: status intel
+                //todo: repairing intel
 //                IntelManagerAPI intelManager = Global.getSector().getIntelManager();
 //                List<IntelInfoPlugin> existingMagicIntel = intelManager.getIntel(MagicBountyIntel.class);
 //                MagicBountyIntel intelForBounty = null;
                 break;
             case FUNCTIONAL:
+                for(FleetMemberAPI fleetMember: bayonetStation.getFleetData().getMembersListCopy()) {
+                    fleetMember.getRepairTracker().setMothballed(false);
+                    fleetMember.getRepairTracker().setCR(fleetMember.getRepairTracker().getMaxCR());
+                    //todo: custom hullmod to set max CR to 0 and to remove the mothballed
+                }
                 bayonetStation.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_MAKE_AGGRESSIVE, true);
                 bayonetStation.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_NO_JUMP, true);
                 bayonetStation.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_MAKE_ALLOW_DISENGAGE, true);
                 bayonetStation.getMemoryWithoutUpdate().unset(MemFlags.FLEET_IGNORED_BY_OTHER_FLEETS);
+                bayonetStation.setNullAIActionText(null);
                 break;
             case BUILDING:
                 //todo: add days
+                data.dayLeftBeforeFunctional = getTotalBuildDay(bayonetStation);
+                //todo: building intel
                 break;
         }
         log.info("Changed Bayonet Station status to " + status.toString());
@@ -226,6 +241,7 @@ public class bayonetManager {
         fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_NO_JUMP, true);
         fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_MAKE_ALLOW_DISENGAGE, true);
         fleet.getStats().getDynamic().getMod(BAYONET_SHIP_STATION_REPAIR_DAY_STATS_KEY).modifyFlat(BAYONET_SHIP_STATION_REPAIR_DAY_STATS_KEY, BASE_REPAIR_DAY);
+        fleet.getStats().getDynamic().getMod(BAYONET_SHIP_STATION_BUILD_DAY_STATS_KEY).modifyFlat(BAYONET_SHIP_STATION_BUILD_DAY_STATS_KEY, BASE_BUILD_DAY);
 
         fleet.setStationMode(true);
 
@@ -244,7 +260,8 @@ public class bayonetManager {
 
         if (!hasListener) {
             fleet.addEventListener(new bayonetFleetEventListener(fleet));
-            fleet.addScript(new bayonetFleetEventListener(fleet));
+            fleet.addScript(new bayonetStationRefitListener(fleet));
+            fleet.addScript(new bayonetFleetRepairTracker(fleet));
         }
 
         //todo: AI core/officer selection ?
