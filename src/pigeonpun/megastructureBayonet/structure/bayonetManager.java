@@ -142,6 +142,9 @@ public class bayonetManager {
         }
         return stationFleet;
     }
+    public static boolean isBayonetStationFleetInit() {
+        return Global.getSector().getMemoryWithoutUpdate().get(BAYONET_STATION_MEMORY_ID) != null && Global.getSector().getMemoryWithoutUpdate().get(BAYONET_STATION_MEMORY_ID) instanceof CampaignFleetAPI;
+    }
 
     /**
      * Use for changing bayonet status while setting up some additional stuffs
@@ -157,7 +160,6 @@ public class bayonetManager {
                 for(FleetMemberAPI fleetMember: bayonetStation.getFleetData().getMembersListCopy()) {
                     fleetMember.getRepairTracker().setMothballed(true);
                     fleetMember.getRepairTracker().setCR(0);
-                    //todo: custom hullmod to set max CR to 0 and to remove the mothballed
                 }
                 bayonetStation.getMemoryWithoutUpdate().unset(MemFlags.MEMORY_KEY_MAKE_AGGRESSIVE);
                 bayonetStation.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_MAKE_NON_AGGRESSIVE, true);
@@ -174,7 +176,6 @@ public class bayonetManager {
                 for(FleetMemberAPI fleetMember: bayonetStation.getFleetData().getMembersListCopy()) {
                     fleetMember.getRepairTracker().setMothballed(false);
                     fleetMember.getRepairTracker().setCR(fleetMember.getRepairTracker().getMaxCR());
-                    //todo: custom hullmod to set max CR to 0 and to remove the mothballed
                 }
                 bayonetStation.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_MAKE_AGGRESSIVE, true);
                 bayonetStation.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_NO_JUMP, true);
@@ -225,6 +226,8 @@ public class bayonetManager {
     public static FleetMemberAPI createBayonetStationMember() {
         FleetMemberAPI member = Global.getFactory().createFleetMember(FleetMemberType.SHIP, "station1_hightech_Standard");
         member.getVariant().addTag(BAYONET_ENTITY_TAG);
+        member.getVariant().addPermaMod("mega_bayonet_info");
+        member.getVariant().setVariantDisplayName("Bayonet Station");
         return member;
     }
     /**

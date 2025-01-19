@@ -3,6 +3,7 @@ package pigeonpun.megastructureBayonet.structure;
 import com.fs.starfarer.api.EveryFrameScript;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
+import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import org.apache.log4j.Logger;
 
 public class bayonetFleetRepairTracker implements EveryFrameScript {
@@ -33,6 +34,13 @@ public class bayonetFleetRepairTracker implements EveryFrameScript {
                 data.dayLeftBeforeFunctional = 0;
             }
             bayonetFleet.getCustomData().put(bayonetManager.BAYONET_ENTITY_STATUS_DATA, data);
+            //display current repair CR in campaign
+            float maxDays = bayonetManager.getTotalRepairDay(bayonetFleet);
+            for(FleetMemberAPI member: bayonetFleet.getFleetData().getMembersListCopy()) {
+                float currentRepairPercentage = (1 - (data.dayLeftBeforeFunctional / maxDays));
+                float setCR = member.getRepairTracker().getMaxCR() * currentRepairPercentage;
+                member.getRepairTracker().setCR(setCR);
+            }
 
             if(data.dayLeftBeforeFunctional == 0) {
                 bayonetManager.changeBayonetStationStatus(bayonetManager.BAYONET_STATION_STATUS.FUNCTIONAL, bayonetFleet);
