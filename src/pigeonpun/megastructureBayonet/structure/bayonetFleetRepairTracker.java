@@ -26,7 +26,7 @@ public class bayonetFleetRepairTracker implements EveryFrameScript {
     public void advance(float amount) {
         bayonetManager.bayonetStatusData data = bayonetManager.getCurrentBayonetStatus(bayonetFleet);
         //todo: add building to this too
-        if (data.status.equals(bayonetManager.BAYONET_STATION_STATUS.REPAIRING)) {
+        if (data.status.equals(bayonetManager.BAYONET_STATION_STATUS.DAMAGED)) {
             float days = Global.getSector().getClock().convertToDays(amount);
 
             data.dayLeftBeforeFunctional -= days;

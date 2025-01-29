@@ -2,18 +2,12 @@ package pigeonpun.megastructureBayonet.abilities;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
-import com.fs.starfarer.api.campaign.CustomCampaignEntityAPI;
 import com.fs.starfarer.api.campaign.SectorEntityToken;
-import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.impl.campaign.abilities.BaseDurationAbility;
-import com.fs.starfarer.api.impl.campaign.ids.Conditions;
-import com.fs.starfarer.api.impl.campaign.ids.Factions;
-import com.fs.starfarer.api.impl.campaign.submarkets.StoragePlugin;
 import com.fs.starfarer.api.ui.LabelAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import org.apache.log4j.Logger;
-import pigeonpun.megastructureBayonet.ModPlugin;
 import pigeonpun.megastructureBayonet.structure.bayonetManager;
 
 import java.awt.*;
@@ -32,7 +26,7 @@ public class bayonetCall extends BaseDurationAbility {
         if(activated) {
             return;
         }
-        bayonetManager.summonBayonetStation();
+        bayonetManager.summonBayonetStation(true);
         activated = true;
     }
 
@@ -60,7 +54,7 @@ public class bayonetCall extends BaseDurationAbility {
         CampaignFleetAPI fleet = bayonetManager.getBayonetStationFleet();
         bayonetManager.bayonetStatusData data = bayonetManager.getCurrentBayonetStatus(fleet);
         switch (data.status) {
-            case REPAIRING:
+            case DAMAGED:
                 tooltip.addPara("- Status: %s, %s", 5f, Misc.getTextColor(), Misc.getHighlightColor(), "Repairing", Math.round(Math.ceil(data.dayLeftBeforeFunctional)) + " days left");
                 break;
             case FUNCTIONAL:
@@ -80,7 +74,7 @@ public class bayonetCall extends BaseDurationAbility {
             status.setHighlightColors(Misc.getTextColor(), fleet.getBattle().getSideTwo().size() > 1? Misc.getNegativeHighlightColor() : fleet.getBattle().getSideTwo().get(0).getFaction().getColor());
         }
         if(Global.getSettings().isDevMode()) {
-            tooltip.addPara("Devmode always enable", Misc.getGrayColor(), 5f);
+            tooltip.addPara("Devmode always enable if not in hyperspace", Misc.getGrayColor(), 5f);
         }
     }
 
@@ -95,7 +89,7 @@ public class bayonetCall extends BaseDurationAbility {
     public boolean isUsable() {
         if(Global.getSettings().isDevMode()) return true;
         CampaignFleetAPI fleet = bayonetManager.getBayonetStationFleet();
-        if(fleet.getBattle() != null) {
+        if(fleet.getBattle() != null || fleet.isInHyperspace()) {
             return false;
         }
         return bayonetManager.isBayonetFunctional(fleet) && super.isUsable();

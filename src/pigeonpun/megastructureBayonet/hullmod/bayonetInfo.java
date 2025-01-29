@@ -4,7 +4,6 @@ import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.combat.BaseHullMod;
 import com.fs.starfarer.api.combat.MutableShipStatsAPI;
 import com.fs.starfarer.api.combat.ShipAPI;
-import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import pigeonpun.megastructureBayonet.structure.bayonetManager;
@@ -22,7 +21,7 @@ public class bayonetInfo extends BaseHullMod {
             case FUNCTIONAL:
                 stats.getMaxCombatReadiness().unmodifyFlat(modId);
                 break;
-            case REPAIRING:
+            case DAMAGED:
                 float totalRepairDays = bayonetManager.getTotalRepairDay(bayonetStation);
                 float currentRepairDaysLeft = statusData.dayLeftBeforeFunctional;
                 stats.getMaxCombatReadiness().modifyFlat(modId,1-(currentRepairDaysLeft/totalRepairDays), "Bayonet Station undergo repairing");
@@ -51,7 +50,7 @@ public class bayonetInfo extends BaseHullMod {
         CampaignFleetAPI bayonetStation = bayonetManager.getBayonetStationFleet();
         bayonetManager.bayonetStatusData data = bayonetManager.getCurrentBayonetStatus(bayonetStation);
         switch (data.status) {
-            case REPAIRING:
+            case DAMAGED:
                 tooltip.addPara("- Status: %s, %s", 5f, Misc.getTextColor(), Misc.getHighlightColor(), "Repairing", Math.round(Math.ceil(data.dayLeftBeforeFunctional)) + " days left");
                 tooltip.addPara("  + CR: %s", 5f, Misc.getTextColor(), Misc.getNegativeHighlightColor(), Math.round(ship.getCurrentCR() * 100) + " %");
                 break;

@@ -2,6 +2,7 @@ package pigeonpun.megastructureBayonet.structure;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.*;
+import com.fs.starfarer.api.campaign.comm.IntelManagerAPI;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.campaign.econ.SubmarketAPI;
 import com.fs.starfarer.api.campaign.listeners.FleetEventListener;
@@ -11,6 +12,7 @@ import com.fs.starfarer.api.impl.campaign.fleets.FleetFactoryV3;
 import com.fs.starfarer.api.impl.campaign.ids.*;
 import com.fs.starfarer.api.impl.campaign.submarkets.StoragePlugin;
 import org.apache.log4j.Logger;
+import pigeonpun.megastructureBayonet.intel.bayonetStationStatusIntel;
 
 import static pigeonpun.megastructureBayonet.structure.bayonetStorageFee.BAYONET_STORAGE_FEE_KEY;
 
@@ -20,16 +22,20 @@ public class bayonetManager {
     public static final String BAYONET_ENTITY_ID = "$mega_bayonet";
     public static final String BAYONET_ENTITY_TAG = "mega_bayonet";
     public static final String BAYONET_ENTITY_STATUS_DATA = "mega_bayonet_broke_down";
-    public static final String BAYONET_ENTITY_STATUS_DATA_MEM_KEY = "$mega_bayonet_status";
     public static final String BAYONET_SHIP_STORAGE_STATS_KEY = "bayonet_ship_storage";
     public static final String BAYONET_SHIP_STORAGE_NO_STORE_TAG = "mega_bayonet_ship_storage_no_store";
     public static final String BAYONET_SHIP_STATION_REPAIR_DAY_STATS_KEY = "bayonet_ship_station_repair_day";
     public static final String BAYONET_SHIP_STATION_BUILD_DAY_STATS_KEY = "bayonet_ship_station_build_day";
-    public static final int BASE_REPAIR_DAY = 5;
+    public static final String BAYONET_SHIP_STATION_MAINTENANCE_STATS_KEY = "bayonet_ship_station_maintenance";
+    public static final String BAYONET_STATION_DAMAGED_TIME_PER_MONTH_MEM_KEY = "$megastructure_bayonet_station_damaged_time_per_month";
+    public static final String BAYONET_SHIP_STATION_DAMAGED_PER_TIME_FEE_STATS_KEY = "megastructure_bayonet_station_damaged_time_per_month";
+    public static final int BASE_DAMAGED_REPAIR_DAY = 5;
+    public static final int BASE_MAINTENANCE_FEE = 30000;
+    public static final int BASE_DAMAGED_REPAIR_PER_TIME_FEE = 80000;
     public static final int BASE_BUILD_DAY = 180; //todo: change this to the station industry build days
 
     public enum BAYONET_STATION_STATUS {
-        REPAIRING, FUNCTIONAL, BUILDING
+        DAMAGED, FUNCTIONAL, BUILDING
     }
     public static class bayonetStatusData {
         public float dayLeftBeforeFunctional = 0f;
@@ -38,7 +44,7 @@ public class bayonetManager {
     }
 
     /**
-     * Get total repair days of Bayonet Station once station's status turn into {@code BAYONET_STATION_STATUS.REPAIRING}
+     * Get total repair days of Bayonet Station once station's status turn into {@code BAYONET_STATION_STATUS.DAMAGED}
      * @param bayonetStation
      * @return
      */
@@ -52,6 +58,42 @@ public class bayonetManager {
      */
     public static float getTotalBuildDay(CampaignFleetAPI bayonetStation) {
         return bayonetStation.getStats().getDynamic().getMod(BAYONET_SHIP_STATION_BUILD_DAY_STATS_KEY).computeEffective(0f);
+    }
+    public static float getTotalMaintenanceFee(CampaignFleetAPI bayonetStation) {
+        return bayonetStation.getStats().getDynamic().getMod(BAYONET_SHIP_STATION_MAINTENANCE_STATS_KEY).computeEffective(0f);
+    }
+
+    /**
+     * Return the damaged per repair time fee
+     * @param bayonetStation
+     * @return
+     */
+    public static float getDamagedPerRepairFee(CampaignFleetAPI bayonetStation) {
+        return bayonetStation.getStats().getDynamic().getMod(BAYONET_SHIP_STATION_DAMAGED_PER_TIME_FEE_STATS_KEY).computeEffective(0f);
+    }
+
+    /**
+     * Get total fee this month with each damaged repairing
+     * @param bayonetStation
+     * @return
+     */
+    public static float getTotalDamagedPerMonthFee(CampaignFleetAPI bayonetStation) {
+        return getDamagedPerRepairFee(bayonetStation) * getDamagedCountThisMonth();
+    }
+    public static int getDamagedCountThisMonth() {
+        int count = 0;
+        if(Global.getSector().getMemoryWithoutUpdate().get(BAYONET_STATION_DAMAGED_TIME_PER_MONTH_MEM_KEY) != null && Global.getSector().getMemoryWithoutUpdate().get(BAYONET_STATION_DAMAGED_TIME_PER_MONTH_MEM_KEY) instanceof Integer) {
+            count = (int) Global.getSector().getMemoryWithoutUpdate().get(BAYONET_STATION_DAMAGED_TIME_PER_MONTH_MEM_KEY);
+        }
+        return count;
+    }
+    public static void updateDamagedTimeThisMonth() {
+        int count = getDamagedCountThisMonth();
+        count += 1;
+        Global.getSector().getMemoryWithoutUpdate().set(BAYONET_STATION_DAMAGED_TIME_PER_MONTH_MEM_KEY, count);
+    }
+    public static void resetDamagedTimeThisMonth() {
+        Global.getSector().getMemoryWithoutUpdate().set(BAYONET_STATION_DAMAGED_TIME_PER_MONTH_MEM_KEY, 0);
     }
     public static float getStorageFeeFraction() {
         float storageFreeFraction = Global.getSettings().getFloat("bayonet_storageFreeFraction");
@@ -102,7 +144,7 @@ public class bayonetManager {
         return (bayonetSubmarketStorage) submarket.getPlugin();
     }
     public static boolean isBayonetRepairing(CampaignFleetAPI bayonetStation) {
-        return getCurrentBayonetStatus(bayonetStation).status.equals(BAYONET_STATION_STATUS.REPAIRING);
+        return getCurrentBayonetStatus(bayonetStation).status.equals(BAYONET_STATION_STATUS.DAMAGED);
     }
     public static boolean isBayonetFunctional(CampaignFleetAPI bayonetStation) {
         return getCurrentBayonetStatus(bayonetStation).status.equals(BAYONET_STATION_STATUS.FUNCTIONAL);
@@ -156,7 +198,7 @@ public class bayonetManager {
         bayonetStatusData data = getCurrentBayonetStatus(bayonetStation);
         data.status = status;
         switch (status) {
-            case REPAIRING:
+            case DAMAGED:
                 for(FleetMemberAPI fleetMember: bayonetStation.getFleetData().getMembersListCopy()) {
                     fleetMember.getRepairTracker().setMothballed(true);
                     fleetMember.getRepairTracker().setCR(0);
@@ -166,11 +208,7 @@ public class bayonetManager {
                 bayonetStation.getMemoryWithoutUpdate().set(MemFlags.FLEET_IGNORED_BY_OTHER_FLEETS, true);
                 bayonetStation.setNullAIActionText("Repairing...");
                 data.dayLeftBeforeFunctional = getTotalRepairDay(bayonetStation);
-
-                //todo: repairing intel
-//                IntelManagerAPI intelManager = Global.getSector().getIntelManager();
-//                List<IntelInfoPlugin> existingMagicIntel = intelManager.getIntel(MagicBountyIntel.class);
-//                MagicBountyIntel intelForBounty = null;
+                updateDamagedTimeThisMonth();
                 break;
             case FUNCTIONAL:
                 for(FleetMemberAPI fleetMember: bayonetStation.getFleetData().getMembersListCopy()) {
@@ -192,15 +230,19 @@ public class bayonetManager {
         log.info("Changed Bayonet Station status to " + status.toString());
         bayonetStation.getCustomData().put(BAYONET_ENTITY_STATUS_DATA, data);
         Global.getSector().getMemoryWithoutUpdate().set(BAYONET_STATION_MEMORY_ID, bayonetStation);
+        //intel
+        IntelManagerAPI intelManager = Global.getSector().getIntelManager();
+        bayonetStationStatusIntel statusIntel = new bayonetStationStatusIntel();
+        intelManager.addIntel(statusIntel);
     }
     /**
      * Actually summoning the station.
      * - cant summon if its repairing/building (DONE)
-     * todo: Add function for devmode to be able to summon the station to location even if repairing/building
+     * - Dev mode enable summoning but if not in hyperspace
      */
-    public static void summonBayonetStation() {
+    public static void summonBayonetStation(boolean isDevmode) {
         CampaignFleetAPI bayonetStation = getBayonetStationFleet();
-        if(isBayonetRepairing(bayonetStation) || isBayonetBuilding(bayonetStation)) return;
+        if(!isDevmode && (isBayonetRepairing(bayonetStation) || isBayonetBuilding(bayonetStation))) return;
         //if station location is different from current player location -> remove the old station -> create a new one at the new location
         //todo: create in hyperspace
         if(bayonetStation.getContainingLocation() != null && !bayonetStation.getContainingLocation().getId().equals(Global.getSector().getCurrentLocation().getId())) {
@@ -243,8 +285,12 @@ public class bayonetManager {
         fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_MAKE_AGGRESSIVE, true);
         fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_NO_JUMP, true);
         fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_MAKE_ALLOW_DISENGAGE, true);
-        fleet.getStats().getDynamic().getMod(BAYONET_SHIP_STATION_REPAIR_DAY_STATS_KEY).modifyFlat(BAYONET_SHIP_STATION_REPAIR_DAY_STATS_KEY, BASE_REPAIR_DAY);
+        //set up custom stats
+        fleet.getStats().getDynamic().getMod(BAYONET_SHIP_STATION_REPAIR_DAY_STATS_KEY).modifyFlat(BAYONET_SHIP_STATION_REPAIR_DAY_STATS_KEY, BASE_DAMAGED_REPAIR_DAY);
         fleet.getStats().getDynamic().getMod(BAYONET_SHIP_STATION_BUILD_DAY_STATS_KEY).modifyFlat(BAYONET_SHIP_STATION_BUILD_DAY_STATS_KEY, BASE_BUILD_DAY);
+        fleet.getStats().getDynamic().getMod(BAYONET_SHIP_STATION_MAINTENANCE_STATS_KEY).modifyFlat(BAYONET_SHIP_STATION_MAINTENANCE_STATS_KEY, BASE_MAINTENANCE_FEE);
+        fleet.getStats().getDynamic().getMod(BAYONET_SHIP_STATION_DAMAGED_PER_TIME_FEE_STATS_KEY).modifyFlat(BAYONET_SHIP_STATION_DAMAGED_PER_TIME_FEE_STATS_KEY, BASE_DAMAGED_REPAIR_PER_TIME_FEE);
+        
 
         fleet.setStationMode(true);
 
@@ -278,6 +324,7 @@ public class bayonetManager {
         fleet.setName("Bayonet Station");
         fleet.getMemoryWithoutUpdate().set(BAYONET_ENTITY_ID, true);
         fleet.setOrbit(null);
+        fleet.setSensorProfile(1f);
         //todo: set building location
         Global.getSector().getCurrentLocation().addEntity(fleet);
 //        fleet.getLocation().set(Global.getSector().getPlayerFleet().getLocation());

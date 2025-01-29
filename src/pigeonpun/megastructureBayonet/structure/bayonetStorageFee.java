@@ -37,6 +37,10 @@ public class bayonetStorageFee implements EconomyTickListener, TooltipMakerAPI.T
         int cargoCost = bayonetManager.getStorageCargoTotalFee(market);
         int shipCost = bayonetManager.getStorageShipTotalFee(market);
         int totalCost = (cargoCost + shipCost);
+        CampaignFleetAPI bayonetStation = bayonetManager.getBayonetStationFleet();
+        float maintCost = bayonetManager.getTotalMaintenanceFee(bayonetStation);
+        float damagedCost = bayonetManager.getTotalDamagedPerMonthFee(bayonetStation);
+
         MonthlyReport report = SharedData.getData().getCurrentReport();
         MonthlyReport.FDNode storageNode = report.getNode(MonthlyReport.STORAGE);
         if(storageNode.name == null) {
@@ -50,27 +54,49 @@ public class bayonetStorageFee implements EconomyTickListener, TooltipMakerAPI.T
         //Getting the first node is the most important part, make sure to check if the node NAME is null to create the node
         //remember to put custom property as well so it will now which root's node it belongs to
         //refer to MontlyReport.java / CoreScript.java
-        MonthlyReport.FDNode bayonetNode = report.getNode(storageNode, "megastructure_bayonet");
-//        bayonetNode.upkeep = totalCost;
-        bayonetNode.name = "Bayonet Storage Maintenance Fee";
-        bayonetNode.icon = Global.getSettings().getSpriteName("income_report", "bayonet_stockpiling");
-        bayonetNode.custom = market;
-        bayonetNode.tooltipCreator = this;
+        MonthlyReport.FDNode bayonetMarketNode = report.getNode(storageNode, "megastructure_bayonet_market");
+//        bayonetMarketNode.upkeep = totalCost;
+        bayonetMarketNode.name = "Bayonet Storage Maintenance Fee";
+        bayonetMarketNode.icon = Global.getSettings().getSpriteName("income_report", "bayonet_stockpiling");
+        bayonetMarketNode.custom = market;
+        bayonetMarketNode.tooltipCreator = this;
 
-        MonthlyReport.FDNode bayonetCargoNode = report.getNode(bayonetNode, "megastructure_bayonet_cargo");
+        MonthlyReport.FDNode bayonetCargoNode = report.getNode(bayonetMarketNode, "megastructure_bayonet_cargo");
         bayonetCargoNode.upkeep = cargoCost;
         bayonetCargoNode.name = "Cargo Storage Fee";
         bayonetCargoNode.tooltipCreator = this;
 
-        MonthlyReport.FDNode bayonetShipNode = report.getNode(bayonetNode, "megastructure_bayonet_ship");
+        MonthlyReport.FDNode bayonetShipNode = report.getNode(bayonetMarketNode, "megastructure_bayonet_ship");
         bayonetShipNode.upkeep = shipCost;
         bayonetShipNode.name = "Ship Storage Fee";
         bayonetShipNode.tooltipCreator = this;
+
+        //fleet
+        MonthlyReport.FDNode fleetNode = report.getNode(MonthlyReport.FLEET);
+        if(fleetNode.name == null) {
+            fleetNode.name = "Fleet";
+            fleetNode.custom = MonthlyReport.FLEET;
+            fleetNode.tooltipCreator = report.getMonthlyReportTooltip();
+        }
+        MonthlyReport.FDNode bayonetFleetNode = report.getNode(fleetNode, "megastructure_bayonet_fleet");
+        bayonetFleetNode.name = "Bayonet Station Fee";
+        bayonetFleetNode.icon = Global.getSettings().getSpriteName("income_report", "bayonet_fleet");
+        bayonetFleetNode.tooltipCreator = this;
+
+        MonthlyReport.FDNode bayonetFleetMaintenanceNode = report.getNode(bayonetFleetNode, "megastructure_bayonet_fleet_maintenance");
+        bayonetFleetMaintenanceNode.upkeep = maintCost;
+        bayonetFleetMaintenanceNode.name = "Station Maintenance Fee";
+        bayonetFleetMaintenanceNode.tooltipCreator = this;
+
+        MonthlyReport.FDNode bayonetFleetDamagedNode = report.getNode(bayonetFleetNode, "megastructure_bayonet_fleet_damaged");
+        bayonetFleetDamagedNode.upkeep = damagedCost;
+        bayonetFleetDamagedNode.name = "Station Damaged Repairing Fee";
+        bayonetFleetDamagedNode.tooltipCreator = this;
     }
 
     @Override
     public void reportEconomyMonthEnd() {
-
+        bayonetManager.resetDamagedTimeThisMonth();
     }
 
     @Override

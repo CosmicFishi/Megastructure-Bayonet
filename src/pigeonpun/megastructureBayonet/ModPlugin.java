@@ -14,15 +14,17 @@ public class ModPlugin extends BaseModPlugin {
     //          Fix a issue where the station can be stored into storage. (done)
     //- monthly fee applying to player (done)
     //- custom hullmod to set CR of station (DONE)
-    //todo - Intel Repairing/building (WIP)
+    //- Intel Repairing/building (DONE)
     //- Station destroyed by enemy -> unrecoverable -> you have to repair it (DONE)
     //- When destroyed, the station can not be summon anymore (DONE).
-    //todo - Storage fee now apply with repair fee.
-    //todo - Optional difficulty: Some ships get "damaged"
+    //- Storage fee now apply with maintenance fee. (DONE)
+    //todo - A send home button. "Emergency home jump"
     //todo - Officer replacing seems to remove the AI core completely ? (May be ignorable if its a fleet commander)
-    //todo - Call in Bayonet in hyperspace and still get it to function ?
+    //  Not a problem if there were no AI core to begin with. Station when first built wont have any commander
     //todo - Megastructure integration (WIP) - Release v0.1.0
+    //todo - Call in Bayonet in hyperspace and still get it to function ?
     //todo - animation - credit SirHarley
+    //todo - Optional difficulty: Some ships get "damaged"
     //todo - Have station "docked" in the planet selected - Release v0.2.0
     //todo - Upgradable Station thru Megastructure - Release v1.0.0
     @Override
@@ -39,7 +41,6 @@ public class ModPlugin extends BaseModPlugin {
     @Override
     public void onGameLoad(boolean newGame) {
         Global.getSector().registerPlugin(new bayonetBaseCampaignPlugin());
-        //todo: move this into mgastructure project
         bayonetManager.createBayonetStorageFee();
     }
 

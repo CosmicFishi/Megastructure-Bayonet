@@ -3,6 +3,10 @@
 	"graphics": {
 		"income_report":{
 			"bayonet_stockpiling":"graphics/icons/reports/stockpile24.png",
+			"bayonet_fleet": "graphics/icons/reports/fleet24.png"
+		},
+		"intel": {
+			"bayonet_status": "graphics/icons/intel/bayonet_events.png"
 		}
 	},
 	"ruleCommandPackages":[
